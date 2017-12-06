@@ -20,7 +20,8 @@ typedef NS_ENUM(NSInteger, NMSSHChannelPtyTerminal) {
     NMSSHChannelPtyTerminalVT102,
     NMSSHChannelPtyTerminalVT220,
     NMSSHChannelPtyTerminalAnsi,
-    NMSSHChannelPtyTerminalXterm
+    NMSSHChannelPtyTerminalXterm,
+    NMSSHChannelPtyTerminalTN6530
 };
 
 typedef NS_ENUM(NSInteger, NMSSHChannelType)  {
