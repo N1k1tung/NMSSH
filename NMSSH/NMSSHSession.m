@@ -12,6 +12,7 @@
 @property (nonatomic, strong) NSString *username;
 
 @property (nonatomic, copy) NSString *(^kbAuthenticationBlock)(NSString *);
+@property (nonatomic, copy) void (^kbAuthenticationInstructionBlock)(NSString *);
 
 @property (nonatomic, strong) NMSSHChannel *channel;
 @property (nonatomic, strong) NMSFTP *sftp;
@@ -467,17 +468,20 @@
 }
 
 - (BOOL)authenticateByKeyboardInteractive {
-    return [self authenticateByKeyboardInteractiveUsingBlock:nil];
+    return [self authenticateByKeyboardInteractiveUsingBlock:nil instructionBlock:nil];
 }
 
-- (BOOL)authenticateByKeyboardInteractiveUsingBlock:(NSString *(^)(NSString *request))authenticationBlock {
+- (BOOL)authenticateByKeyboardInteractiveUsingBlock:(NSString *(^)(NSString *request))authenticationBlock
+                                   instructionBlock:(void (^)(NSString *))instructionBlock {
     if (![self supportsAuthenticationMethod:@"keyboard-interactive"]) {
         return NO;
     }
 
     self.kbAuthenticationBlock = authenticationBlock;
+    self.kbAuthenticationInstructionBlock = instructionBlock;
     int rc = libssh2_userauth_keyboard_interactive(self.session, [self.username UTF8String], &kb_callback);
     self.kbAuthenticationBlock = nil;
+    self.kbAuthenticationInstructionBlock = nil;
 
     if (rc != 0) {
         NMSSHLogError(@"Keyboard-interactive authentication failed with reason %i", rc);
@@ -819,6 +823,12 @@ void kb_callback(const char *name, int name_len, const char *instr, int instr_le
 
         res[i].text = strdup([response UTF8String]);
         res[i].length = (unsigned int)strlen([response UTF8String]);
+    }
+    
+    if (!num_prompts && instr_len) {
+        NSString *instruction = [[NSString alloc] initWithBytes:instr length:instr_len encoding:NSUTF8StringEncoding];
+        if (self.kbAuthenticationInstructionBlock)
+            self.kbAuthenticationInstructionBlock(instruction);
     }
 }
 

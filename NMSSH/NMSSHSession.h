@@ -264,7 +264,8 @@ typedef NS_ENUM(NSInteger, NMSSHKnownHostStatus) {
      to the given question.
  @returns Authentication success
  */
-- (BOOL)authenticateByKeyboardInteractiveUsingBlock:(NSString *(^)(NSString *request))authenticationBlock;
+- (BOOL)authenticateByKeyboardInteractiveUsingBlock:(NSString *(^)(NSString *request))authenticationBlock
+                                   instructionBlock:(void (^)(NSString *))instructionBlock;
 
 /**
  Setup and connect to an SSH agent
