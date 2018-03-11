@@ -109,6 +109,19 @@ typedef NS_ENUM(NSInteger, NMSSHChannelType)  {
  */
 - (NSString *)execute:(NSString *)command error:(NSError **)error timeout:(NSNumber *)timeout;
 
+/**
+ Execute a channel specific command on the server
+ 
+ If an error occurs or the connection timed out, it will return `nil` and populate the error object.
+ If requestPty is enabled request a pseudo terminal before running the
+ command.
+ 
+ @param command Any shell script that is available on the server
+ @param error Error handler
+ @returns channel command success
+ */
+- (BOOL)executeChannelCommand:(NSString *)command error:(NSError **)error;
+
 /// ----------------------------------------------------------------------------
 /// @name Remote shell session
 /// ----------------------------------------------------------------------------

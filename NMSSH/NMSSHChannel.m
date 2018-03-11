@@ -305,6 +305,39 @@
     return nil;
 }
 
+- (BOOL)executeChannelCommand:(NSString *)command error:(NSError *__autoreleasing *)error {
+    NMSSHLogInfo(@"Exec channel command %@", command);
+    
+    // In case of error...
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:command forKey:@"command"];
+    
+    if (!self.channel && ![self openChannel:error]) {
+        return NO;
+    }
+    
+    int rc = 0;
+    
+    // Try executing command
+    rc = libssh2_channel_specific_request(self.channel, [command UTF8String], (int)[command length], NULL, 0);
+    
+    if (rc != 0) {
+        if (error) {
+            [userInfo setObject:[[self.session lastError] localizedDescription] forKey:NSLocalizedDescriptionKey];
+            [userInfo setObject:[NSString stringWithFormat:@"%zi", rc] forKey:NSLocalizedFailureReasonErrorKey];
+            
+            *error = [NSError errorWithDomain:@"NMSSH"
+                                         code:NMSSHChannelExecutionError
+                                     userInfo:userInfo];
+        }
+        
+        NMSSHLogError(@"Error executing command");
+        [self closeChannel];
+        return NO;
+    }
+    
+    return YES;
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark - REMOTE SHELL SESSION
 // -----------------------------------------------------------------------------
