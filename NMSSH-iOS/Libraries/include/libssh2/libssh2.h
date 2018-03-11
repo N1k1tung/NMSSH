@@ -46,13 +46,13 @@
    to make the BANNER define (used by src/session.c) be a valid SSH
    banner. Release versions have no appended strings and may of course not
    have dashes either. */
-#define LIBSSH2_VERSION "1.8.0"
+#define LIBSSH2_VERSION                             "1.8.1_DEV"
 
 /* The numeric version number is also available "in parts" by using these
    defines: */
-#define LIBSSH2_VERSION_MAJOR 1
-#define LIBSSH2_VERSION_MINOR 8
-#define LIBSSH2_VERSION_PATCH 0
+#define LIBSSH2_VERSION_MAJOR                       1
+#define LIBSSH2_VERSION_MINOR                       8
+#define LIBSSH2_VERSION_PATCH                       1
 
 /* This is the numeric version of the libssh2 version number, meant for easier
    parsing and comparions by programs. The LIBSSH2_VERSION_NUM define will
@@ -69,7 +69,7 @@
    and it is always a greater number in a more recent release. It makes
    comparisons with greater than and less than work.
 */
-#define LIBSSH2_VERSION_NUM 0x010800
+#define LIBSSH2_VERSION_NUM                         0x010801
 
 /*
  * This is the date and time when the full source package was created. The
@@ -80,7 +80,7 @@
  *
  * "Mon Feb 12 11:35:33 UTC 2007"
  */
-#define LIBSSH2_TIMESTAMP "Tue Oct 25 06:44:33 UTC 2016"
+#define LIBSSH2_TIMESTAMP "DEV"
 
 #ifndef RC_INVOKED
 
@@ -403,11 +403,13 @@ typedef struct _LIBSSH2_POLLFD {
 /* Hash Types */
 #define LIBSSH2_HOSTKEY_HASH_MD5                            1
 #define LIBSSH2_HOSTKEY_HASH_SHA1                           2
+#define LIBSSH2_HOSTKEY_HASH_SHA256                         3
 
 /* Hostkey Types */
-#define LIBSSH2_HOSTKEY_TYPE_UNKNOWN			    0
-#define LIBSSH2_HOSTKEY_TYPE_RSA			    1
-#define LIBSSH2_HOSTKEY_TYPE_DSS			    2
+#define LIBSSH2_HOSTKEY_TYPE_UNKNOWN            0
+#define LIBSSH2_HOSTKEY_TYPE_RSA                1
+#define LIBSSH2_HOSTKEY_TYPE_DSS                2
+#define LIBSSH2_HOSTKEY_TYPE_ECDSA              3
 
 /* Disconnect Codes (defined by SSH protocol) */
 #define SSH_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT          1
@@ -482,6 +484,7 @@ typedef struct _LIBSSH2_POLLFD {
 #define LIBSSH2_ERROR_ENCRYPT                   -44
 #define LIBSSH2_ERROR_BAD_SOCKET                -45
 #define LIBSSH2_ERROR_KNOWN_HOSTS               -46
+#define LIBSSH2_ERROR_CHANNEL_WINDOW_FULL       -47
 
 /* this is a define to provide the old (<= 1.2.7) name */
 #define LIBSSH2_ERROR_BANNER_NONE LIBSSH2_ERROR_BANNER_RECV
@@ -765,6 +768,12 @@ LIBSSH2_API int libssh2_channel_x11_req_ex(LIBSSH2_CHANNEL *channel,
 #define libssh2_channel_x11_req(channel, screen_number) \
  libssh2_channel_x11_req_ex((channel), 0, NULL, NULL, (screen_number))
 
+LIBSSH2_API int libssh2_channel_specific_request(LIBSSH2_CHANNEL *channel,
+                                                    const char *request,
+                                                    unsigned int request_len,
+                                                    const char *data,
+                                                    unsigned int data_len);
+    
 LIBSSH2_API int libssh2_channel_process_startup(LIBSSH2_CHANNEL *channel,
                                                 const char *request,
                                                 unsigned int request_len,
@@ -965,6 +974,7 @@ libssh2_knownhost_init(LIBSSH2_SESSION *session);
 #define LIBSSH2_KNOWNHOST_KEY_RSA1     (1<<18)
 #define LIBSSH2_KNOWNHOST_KEY_SSHRSA   (2<<18)
 #define LIBSSH2_KNOWNHOST_KEY_SSHDSS   (3<<18)
+#define LIBSSH2_KNOWNHOST_KEY_ECDSA	   (4<<18)
 #define LIBSSH2_KNOWNHOST_KEY_UNKNOWN  (7<<18)
 
 LIBSSH2_API int
