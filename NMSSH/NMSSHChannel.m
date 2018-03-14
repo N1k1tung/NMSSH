@@ -318,7 +318,10 @@
     int rc = 0;
     
     // Try executing command
-    rc = libssh2_channel_specific_request(self.channel, [command UTF8String], (int)[command length], NULL, 0);
+    do {
+        rc = libssh2_channel_specific_request(self.channel, [command UTF8String], (int)[command length], NULL, 0);
+    }
+    while (rc == LIBSSH2_ERROR_EAGAIN);
     
     if (rc != 0) {
         if (error) {
@@ -371,8 +374,13 @@
 
             rc = libssh2_channel_read(self.channel, buffer, (ssize_t)sizeof(buffer));
             erc = libssh2_channel_read_stderr(self.channel, buffer, (ssize_t)sizeof(buffer));
-
-            if (!(rc >=0 || erc >= 0)) {
+            
+            if (!(rc > 0 || erc >= 0)) {
+                if (rc == LIBSSH2_ERROR_EAGAIN) {
+                    waitsocket(CFSocketGetNative([self.session socket]), self.session.rawSession);
+                    continue;
+                }
+                
                 NMSSHLogVerbose(@"Return code of response %ld, error %ld", (long)rc, (long)erc);
 
                 if (rc == LIBSSH2_ERROR_SOCKET_RECV || erc == LIBSSH2_ERROR_SOCKET_RECV) {
