@@ -319,6 +319,7 @@
     
     // Try executing command
     do {
+        waitsocket(CFSocketGetNative([self.session socket]), self.session.rawSession);
         rc = libssh2_channel_specific_request(self.channel, [command UTF8String], (int)[command length], NULL, 0);
     }
     while (rc == LIBSSH2_ERROR_EAGAIN);
@@ -370,7 +371,7 @@
         ssize_t rc, erc=0;
         char buffer[self.bufferSize];
 
-        while (self.channel != NULL) {
+        while (self.channel != NULL && self.source != NULL) {
 
             rc = libssh2_channel_read(self.channel, buffer, (ssize_t)sizeof(buffer));
             erc = libssh2_channel_read_stderr(self.channel, buffer, (ssize_t)sizeof(buffer));
@@ -466,7 +467,7 @@
         [self setSource: nil];
     }
 
-    if (self.type == NMSSHChannelTypeShell) {
+    if (self.type == NMSSHChannelTypeShell && self.session.isConnected) {
         // Set blocking mode
         libssh2_session_set_blocking(self.session.rawSession, 1);
 

@@ -336,8 +336,8 @@
 
 
 - (void)disconnect {
-    if (_channel) {
-        [_channel closeShell];
+    if (self.channel) {
+        [self.channel closeShell];
         [self setChannel:nil];
     }
 
@@ -852,7 +852,9 @@ void disconnect_callback(LIBSSH2_SESSION *session, int reason, const char *messa
         [self.delegate session:self didDisconnectWithError:error];
     }
 
-    [self disconnect];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self disconnect];
+    });
 }
 
 // -----------------------------------------------------------------------------
